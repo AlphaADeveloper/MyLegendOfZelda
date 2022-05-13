@@ -48,7 +48,12 @@ let maps = [];
 let gameMap = null;
 let lastPickUpItem = 0;
 let playPickUpItemAnimation = false;
-
+let ruppeeAmount = 0;
+let linkHearts = 0;
+let currentLinkHearts = 3;
+let keyAmount = 1;
+let bombAmount = 5;
+let swordEquipped = 0;
 
 
 function GameObject(){
@@ -770,6 +775,64 @@ function collision(x, y, map){
 return false;
 }
 
+
+function drawHUD()
+{
+	ctx.drawImage(hud, 258, 11, 256, 56, 0, 0, 256, 56);
+	
+	ctx.fillStyle = "black";
+	ctx.fillRect(176, 32, 64, 16);
+	
+	let fullHearts = Math.floor(currentLinkHearts);
+	let halfHearts = currentLinkHearts - fullHearts;
+	
+	for(let i = 0; i < linkHearts; i++)
+	{
+		let heartY = 40;
+		let heartX = 176 + (i * 8);
+		if(i > 7)
+		{
+			heartY = 40 - 8;
+			heartX -= 64;
+		}
+		ctx.drawImage(hud, 627, 117, 8, 8, heartX, heartY, 8, 8);
+	}
+	let halfHeartX = 0;
+	let halfHeartY = 0;
+	for(let i = 0; i < fullHearts; i++)
+	{
+		let heartY = 40;
+		let heartX = 176 + (i * 8);
+		if(i > 7)
+		{
+			heartY = 40 - 8;
+			heartX -= 64;
+		}
+		ctx.drawImage(hud, 645, 117, 8, 8, heartX, heartY, 8, 8);
+		if(i == fullHearts - 1)
+		{
+			if(i > 6)
+			{
+				halfHeartY = 40 - 8;
+				halfHeartX = 176 + ((i%7) * 8);
+			}
+			else
+			{
+				halfHeartY = 40;
+				halfHeartX = 176 + (i * 8) + 8;
+			}
+		}
+	}
+	if(halfHearts > 0 && fullHearts >= 1)
+	{
+		ctx.drawImage(hud, 636, 117, 8, 8, halfHeartX, halfHeartY, 8, 8);
+	}
+	else if(halfHearts > 0 && fullHearts == 0)
+	{
+		ctx.drawImage(hud, 636, 117, 8, 8, 176, 40, 8, 8);
+	}
+}
+
 function draw () {
    setTimeout(function() {
    requestAnimationFrame(draw);
@@ -780,6 +843,7 @@ function draw () {
    drawLink();
    gameObjectCollision(linkX, linkY, gameObjects, true);
    drawGameObjects();
+    drawHUD();
 },1000/fps);
 }
 draw();
