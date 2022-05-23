@@ -30,7 +30,8 @@ let chars1 = new Image();
 chars1.src = "chars.png";
 let chars2 = new Image();
 chars2.src = "chars2.png";
-
+let enemies = new Image();
+enemies.src = "enemies.png";
 
 
 let rightPressed = false;
@@ -48,12 +49,15 @@ let maps = [];
 let gameMap = null;
 let lastPickUpItem = 0;
 let playPickUpItemAnimation = false;
-let ruppeeAmount = 0;
+let rupeeAmount = 0;
 let linkHearts = 0;
 let currentLinkHearts = 3;
 let keyAmount = 1;
 let bombAmount = 5;
 let swordEquipped = 0;
+let hasSword = false;
+let isAttacking = false;
+let canAttackAgain = true;
 
 
 function GameObject(){
@@ -81,7 +85,19 @@ function GameObject(){
 	this.pickUpItemNum = 0;
 	this.isFLame = false;
 	this.isOldWoman = false;
-	
+	this.enemyType = 0;
+	this.isEnemy = false;
+	this.nextX = 0;
+	this.nextY = 0;
+	this.isAttacking = false;
+	this.health = 0;
+	this.direction = "up";
+	this.enemy = [];
+	this.counter = 0;
+	this.frame =0;
+	this.needsBounce = false;
+	this.bounceX = 0;
+	this.bounceY = 0;
 	
 }
 
@@ -121,7 +137,14 @@ function keyDownHandler(e){
 	   downPressed = true;
 	   lastButtonPressed = "down";
 	}
+     if(e.keyCode == 32 && canAttackAgain && hasSword){
+	    isAttacking = true;
+		currentAnimation = 0; 
+		canAttackAgain = false;
+		playSound("./sounds/LOZ_sword_slash.wav");
+	 }
 }
+
 
 function keyUpHandler(e){
     if(e.keyCode == 37)
@@ -229,7 +252,51 @@ function drawLink()
 		}
 	}
 	else{
-		if(leftPressed && !collision(linkX - speed, linkY, gameMap))
+	    if(isAttacking && hasSword){
+		   if(currentAnimation == 0){
+		      if(lastButtonPressed == "down"){
+			     ctx.drawImage(link1, 0, 60, 16, 16, linkX, linkY, 16, 16);
+			  }
+			    if(lastButtonPressed == "up"){
+			     ctx.drawImage(link1, 62, 60, 16, 16, linkX, linkY, 16, 16);
+			  } 
+			  if(lastButtonPressed == "left"){
+			     ctx.drawImage(link1, 30, 60, 16, 16, linkX, linkY, 16, 16);
+			  }  
+			  if(lastButtonPressed == "right"){
+			     ctx.drawImage(link1, 91, 60, 16, 16, linkX, linkY, 16, 16);
+			  }
+		   }
+		   if(currentAnimation == 1){
+		      if(lastButtonPressed == "down"){
+			     ctx.drawImage(link1, 0, 84, 16, 27, linkX, linkY, 16, 27);
+				gameObjectCollision(linkX + 7, linkY + 16, gameObjects, false, true);
+			  }
+			    if(lastButtonPressed == "up"){
+			     ctx.drawImage(link1, 62, 84, 16, 26, linkX, linkY - 14, 16, 26);
+			  	gameObjectCollision(linkX + 3, linkY - 14, gameObjects, false, true);
+			  } 
+			  if(lastButtonPressed == "left"){
+			     ctx.drawImage(link1, 22, 84, 26, 27, linkX - 10, linkY - 8, 27, 27);
+				gameObjectCollision(linkX - 8, linkY + 5, gameObjects, false, true);
+			  }  
+			  if(lastButtonPressed == "right"){
+			     ctx.drawImage(link1, 84, 84, 30, 26, linkX, linkY - 8, 30, 26);
+			   	gameObjectCollision(linkX + 14, linkY + 5, gameObjects, false, true);
+			  }
+		   }
+		         if(animationCounter >= 6){
+				    currentAnimation++;
+					animationCounter = 0;
+					if(currentAnimation > 1){
+					isAttacking = false;
+					canAttackAgain = true;
+					
+					
+					}
+				 }
+		 }
+		else if(leftPressed && !collision(linkX - speed, linkY, gameMap))
 		{
 				linkX -= speed;
 				if(currentAnimation == 0)
@@ -320,22 +387,23 @@ function drawLink()
 			{
 				ctx.drawImage(link1, 0, 0, 
 				16, 16, linkX, linkY, 16, 16);
+				
 			}
 			if(lastButtonPressed == "up")
 			{
 				ctx.drawImage(link1, 62, 0, 
 				16, 16, linkX, linkY, 16, 16);
-			}
+					}
 			if(lastButtonPressed == "left")
 			{
 				ctx.drawImage(link1, 30, 0, 
 				16, 16, linkX, linkY, 16, 16);
-			}
+			    }
 			if(lastButtonPressed == "right")
 			{
 				ctx.drawImage(link1, 91, 0, 
 				16, 16, linkX, linkY, 16, 16);
-			}
+					}
 		}
 	}
 }
@@ -367,6 +435,18 @@ gO.newLinkX = 120;
 gO.newLinkY = 220;
 gO.isPortal = true;
 objects7_7.push(gO);
+
+gO = new GameObject()
+gO.x = 160;
+gO.y = 184;
+gO.width = 16;
+gO.height = 16;
+gO.isEnemy = true;
+gO.enemyType = 1;
+objects7_7.push(gO);
+
+
+
 
 let bundle = new MapBundle(map7_7, objects7_7);
 maps.push(bundle);
@@ -482,7 +562,7 @@ gameObjects = maps[0].gameobjects;
    }
 }
 }
-function gameObjectCollision(x, y, objects, isLink)
+function gameObjectCollision(x, y, objects, isLink, isSword)
 {
 	if(isLink)
 	{
@@ -612,6 +692,7 @@ function gameObjectCollision(x, y, objects, isLink)
 									lastPickUpItem = gameObjects[i].pickUpItemNum;
 									swordEquipped = 1;
 									animationCounter = 0;
+									hasSword = true;
 									playSound("./sounds/item.mp3");
 							}
 							
@@ -621,7 +702,39 @@ function gameObjectCollision(x, y, objects, isLink)
 					}
 			}
 	}
-}
+	else{
+	   let swordW = 11;
+	   let swordH = 3;
+	   if(lastButtonPressed == "up" || lastButtonPressed == "down"){
+	     swordW = 3;
+		 swordH = 11;
+		 
+	   }
+	   for(let i = 0; i < gameObjects.length; i++){
+	      
+	   
+	   if(x <= objects[i].x + objects[i].width &&
+			x + swordW >= objects[i].x &&
+			y <= objects[i].y + objects[i].height &&
+			y + swordH >= objects[i].y)
+			{
+	          if(objects[i].isEnemy){
+			    objects[i].health -= 1;
+				 if(objects[i].health <= 0){
+				   playSound("./sounds/LOZ_enemy_die.wav");
+				   
+				 }
+				 else{
+				  playSound("./sounds/LOZ_enemy_hit.wav");
+				  }
+			  }
+	 
+	     }
+		 } 
+		 
+	   }
+	}
+
 
 function drawGameObjects(){
 	for(let i = 0; i < gameObjects.length; i++){
@@ -750,7 +863,56 @@ if(gameObjects[i].isText)
 						gameObjects[i].x, gameObjects[i].y, 16, 16);
 		}
 		
-		
+		if(gameObjects[i].isEnemy){
+		    if(gameObjects[i].enemyType == 1){
+			   gameObjects[i].counter++;
+			   if(gameObjects[i].counter >= 10){
+			       gameObjects[i].frame++;
+				   gameObjects[i].counter = 0;
+				   if(gameObjects[i].frame > 1){
+				      gameObjects[i].frame = 0;
+				   }
+			   }
+			     if(gameObjects[i].direction == "down"){
+				   if(gameObjects[i].frame == 0){
+				     ctx.drawImage(enemies, 0, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
+				   }
+				   if(gameObjects[i].frame == 1){
+				     ctx.drawImage(enemies, 0, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
+				 }
+			
+			}
+		        else if(gameObjects[i].direction == "up"){
+				    if(gameObjects[i].frame == 0){
+				     ctx.drawImage(enemies, 60, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
+				   }
+				   if(gameObjects[i].frame == 1){
+				     ctx.drawImage(enemies, 60, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
+				 }
+			
+			}
+		else if(gameObjects[i].direction == "left"){
+				    if(gameObjects[i].frame == 0){
+				     ctx.drawImage(enemies, 30, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
+				   }
+				   if(gameObjects[i].frame == 1){
+				     ctx.drawImage(enemies, 30, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
+				 }
+			
+			}
+					else
+				{
+					if(gameObjects[i].frame == 0)
+					{
+						ctx.drawImage(enemies, 90, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
+					}
+					if(gameObjects[i].frame == 1)
+					{
+						ctx.drawImage(enemies, 90, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
+					}
+				}
+			}
+		}
 	}
 }
 
@@ -831,6 +993,40 @@ function drawHUD()
 	{
 		ctx.drawImage(hud, 636, 117, 8, 8, 176, 40, 8, 8);
 	}
+       ctx.fillStyle = "black";
+	   ctx.fillRect(96, 10, 24, 50);
+	   
+	   if(rupeeAmount < 100){
+	   ctx.drawImage(hud, 519, 117, 8, 8, 96, 16, 8, 8,);
+        let firstNum = rupeeAmount % 10;
+		ctx.drawImage(hud, 528 + (8 * firstNum)+ firstNum, 117, 8, 8, 96 + 16, 16, 8, 8  );
+        let secondNum = Math.floor(rupeeAmount / 10);
+		ctx.drawImage(hud, 528 + (8 * secondNum)+ secondNum, 117, 8, 8, 96 + 8, 16,  8, 8  );
+}
+else{
+ let firstNum = rupeeAmount % 10;
+		ctx.drawImage(hud, 528 + (8 * firstNum)+ firstNum, 117, 8, 8, 96 + 16, 16, 8, 8  );
+        let thirdNum = Math.floor(rupeeAmount / 100) * 100;
+        let secondNum = ((rupeeAmount - thirdNum) - firstNum) / 10;
+        ctx.drawImage(hud, 528 + (8 * secondNum)+ secondNum, 117, 8, 8, 96 + 8, 16, 8, 8  );
+        thirdNum = Math.floor(rupeeAmount / 100);
+        ctx.drawImage(hud, 528 + (8 * thirdNum) + thirdNum, 117, 8, 8, 96,  16,  8, 8  );
+}
+    ctx.drawImage(hud, 519, 117, 8, 8, 96, 32, 8, 8,);
+	ctx.drawImage(hud, 519, 117, 8, 8, 96, 41, 8, 8,);
+    ctx.drawImage(hud, 528 + (8 * keyAmount)+ keyAmount, 117, 8, 8, 96 + 8, 32, 8, 8  );
+    ctx.drawImage(hud, 528 + (8 * bombAmount)+ bombAmount, 117, 8, 8, 96 + 8, 41, 8, 8  );
+
+    
+	   ctx.fillRect(128, 24, 8, 16);
+       ctx.fillRect(152, 24, 8, 16);
+       
+	   if(swordEquipped == 1){
+	   ctx.drawImage(hud, 555, 137, 8, 16, 152, 24, 8, 16);
+}	   
+    ctx.fillStyle = "gray";
+	ctx.fillRect(16, 8, 64, 48);
+
 }
 
 function draw () {
