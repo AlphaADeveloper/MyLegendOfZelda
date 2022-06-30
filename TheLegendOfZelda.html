@@ -8,6 +8,7 @@
 </head>
 <body>
 <canvas id= "myCanvas" width="256" height="240"></canvas>
+<script src="mapsFile.js"></script>
 <script type="text/javascript">
 let canvas = document.getElementById("myCanvas");
 let ctx = canvas.getContext("2d");
@@ -15,7 +16,7 @@ let ctx = canvas.getContext("2d");
 document.body.style.zoom ="288%";
 
 //to run in firefox use the following code.
-//document.body.style.transform = 'scale(5)';
+//document.body.style.transform = 'scale(2)';
 
 document.addEventListener("keydown",keyDownHandler, false);
 document.addEventListener("keyup",keyUpHandler,false);
@@ -45,7 +46,7 @@ let animationSpeed = 10;
 let linkX = 116;
 let linkY = 135;
 let gameObjects = [];
-let maps = [];
+
 let gameMap = null;
 let lastPickUpItem = 0;
 let playPickUpItemAnimation = false;
@@ -59,53 +60,11 @@ let hasSword = false;
 let isAttacking = false;
 let canAttackAgain = true;
 
+gameObjects = maps[119].gameobjects;
+gameMap = maps[119].map;
+let currentMap = 119;
+addMapGameObjects(gameMap, gameObjects);
 
-function GameObject(){
-	this.x = 0;
-	this.y = 0;
-	this.width = 0;
-	this.height = 0;
-	this.newMap = 0;
-	this.newLinkX = 0;
-	this.newLinkY = 0;
-	this.isPortal = false;
-	this.counter = 0;
-	this.imageNum = 0;
-	this.isText = false;
-	this.line1Full ="";
-	this.line2Full ="";
-	this.line1Current ="";
-	this.line2Current ="";
-	this.line1X = 0;
-	this.line1Y = 0;
-	this.line2X = 0;
-	this.line2Y = 0;
-	this.isOldMan = false;
-	this.isPickUpItem = false;
-	this.pickUpItemNum = 0;
-	this.isFLame = false;
-	this.isOldWoman = false;
-	this.enemyType = 0;
-	this.isEnemy = false;
-	this.nextX = 0;
-	this.nextY = 0;
-	this.isAttacking = false;
-	this.health = 0;
-	this.direction = "up";
-	this.enemy = [];
-	this.counter = 0;
-	this.frame =0;
-	this.needsBounce = false;
-	this.bounceX = 0;
-	this.bounceY = 0;
-	
-}
-
-function MapBundle(m, o,){
-
-this.map = m;
-this.gameobjects = o;
-}
 
 function playSound(source){
 let sound = new Audio();
@@ -138,7 +97,8 @@ function keyDownHandler(e){
 	   lastButtonPressed = "down";
 	}
      if(e.keyCode == 32 && canAttackAgain && hasSword){
-	    isAttacking = true;
+	    
+		isAttacking = true;
 		currentAnimation = 0; 
 		canAttackAgain = false;
 		playSound("./sounds/LOZ_sword_slash.wav");
@@ -270,19 +230,19 @@ function drawLink()
 		   if(currentAnimation == 1){
 		      if(lastButtonPressed == "down"){
 			     ctx.drawImage(link1, 0, 84, 16, 27, linkX, linkY, 16, 27);
-				gameObjectCollision(linkX + 7, linkY + 16, gameObjects, false, true);
+				gameObjectCollision(linkX + 7, linkY + 16, gameObjects, false, true, "down");
 			  }
 			    if(lastButtonPressed == "up"){
 			     ctx.drawImage(link1, 62, 84, 16, 26, linkX, linkY - 14, 16, 26);
-			  	gameObjectCollision(linkX + 3, linkY - 14, gameObjects, false, true);
+			  	gameObjectCollision(linkX + 3, linkY - 14, gameObjects, false, true, "up");
 			  } 
 			  if(lastButtonPressed == "left"){
 			     ctx.drawImage(link1, 22, 84, 26, 27, linkX - 10, linkY - 8, 27, 27);
-				gameObjectCollision(linkX - 8, linkY + 5, gameObjects, false, true);
+				gameObjectCollision(linkX - 8, linkY + 5, gameObjects, false, true, "left");
 			  }  
 			  if(lastButtonPressed == "right"){
 			     ctx.drawImage(link1, 84, 84, 30, 26, linkX, linkY - 8, 30, 26);
-			   	gameObjectCollision(linkX + 14, linkY + 5, gameObjects, false, true);
+			   	gameObjectCollision(linkX + 14, linkY + 5, gameObjects, false, true, "right");
 			  }
 		   }
 		         if(animationCounter >= 6){
@@ -407,147 +367,7 @@ function drawLink()
 		}
 	}
 }
-let map7_7 = [
-        [22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-        [22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-        [22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-        [22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-        [61, 61, 61, 61, 61, 61, 61,  2,  2, 61, 61, 61, 61, 61, 61, 61],
-        [61, 61, 61, 61, 28, 61, 62,  2,  2, 61, 61, 61, 61, 61, 61, 61],
-        [61, 61, 61, 62,  2,  2,  2,  2,  2, 61, 61, 61, 61, 61, 61, 61],
-        [61, 61, 62,  2,  2,  2,  2,  2,  2, 61, 61, 61, 61, 61, 61, 61],
-        [61, 62,  2,  2,  2,  2,  2,  2,  2, 60, 61, 61, 61, 61, 61, 61],
-        [ 2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2],
-        [43, 44,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 43, 43],
-        [61, 61,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 61, 61],
-        [61, 61,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2,  2, 61, 61],
-        [61, 61, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 43, 61, 61],
-        [61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61, 61]];
-let objects7_7 = [];
 
-let gO = new GameObject();
-gO.x = 72;
-gO.y = 72;
-gO.width = 8;
-gO.height = 16;
-gO.newMap = 1;
-gO.newLinkX = 120;
-gO.newLinkY = 220;
-gO.isPortal = true;
-objects7_7.push(gO);
-
-gO = new GameObject()
-gO.x = 160;
-gO.y = 184;
-gO.width = 16;
-gO.height = 16;
-gO.isEnemy = true;
-gO.enemyType = 1;
-objects7_7.push(gO);
-
-
-
-
-let bundle = new MapBundle(map7_7, objects7_7);
-maps.push(bundle);
-	
-	
-	
-///////////////////////////////////////////////////////////////////
-let mapWoodSword = [
-[ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-[ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-[ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-[ 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22, 22],
-[ 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55],
-[ 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55, 55],
-[ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
-[ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
-[ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
-[ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
-[ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
-[ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
-[ 55, 55, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 28, 55, 55],
-[ 55, 55, 37, 37, 37, 37, 37, 28, 28, 37, 37, 37, 37, 37, 55, 55],
-[ 55, 55, 55, 55, 55, 55, 55, 28, 28, 55, 55, 55, 55, 55, 55, 55]];		
-let gameObjectsWoodSword = [];
-
-gO = new GameObject();
-gO.x = (10 * 16) + 8;
-gO.y = (8 * 16);
-gO.width = 16;
-gO.height = 16;
-gO.isFlame = true;
-gameObjectsWoodSword.push(gO);
-
-gO = new GameObject();
-gO.x = (7 * 16) + 8;
-gO.y = (8 * 16);
-gO.width = 16;
-gO.height = 16;
-gO.isOldMan = true;
-gameObjectsWoodSword.push(gO);
-
-gO = new GameObject();
-gO.x = (4 * 16) + 8;
-gO.y = (8 * 16);
-gO.width = 16;
-gO.height = 16;
-gO.isFlame = true;
-gameObjectsWoodSword.push(gO);
-
-//Sword
-gO = new GameObject();
-gO.x = (8 * 16) - 4;
-gO.y = (9.5 * 16);
-gO.width = 8;
-gO.height = 16;
-gO.isPickUpItem = true;
-gO.pickUpItemNum = 14;
-gameObjectsWoodSword.push(gO);
-
-gO = new GameObject();
-gO.isText = true;
-gO.line1Full = "IT'S DANGEROUS TO GO ";
-gO.line2Full = "ALONE! TAKE THIS."
-gO.line1X = 3 * 16;
-gO.line1Y = 7 * 16;
-gO.line2X = 4 * 16;
-gO.line2Y = (8 * 16) - 6 ;
-gameObjectsWoodSword.push(gO);
-
-
-
-//Portal varibales for transition between maps 
-gO = new GameObject();
-gO.x = 112;
-gO.y = 240;
-gO.width = 16;
-gO.height = 16;
-gO.newMap = 0;
-gO.newLinkX = 68;
-gO.newLinkY = 96;
-gO.isPortal = true;
-gameObjectsWoodSword.push(gO);
-
-gO = new GameObject();
-gO.x = 128;
-gO.y = 240;
-gO.width = 16;
-gO.height = 16;
-gO.newMap = 0;
-gO.newLinkX = 68;
-gO.newLinkY = 96;
-gO.isPortal = true;
-gameObjectsWoodSword.push(gO);
-
-bundle = new MapBundle(mapWoodSword, gameObjectsWoodSword);
-maps.push(bundle);
-gameMap = maps[0].map;
-gameObjects = maps[0].gameobjects;
-
-		
-		
 		function drawMap(level)
 		{
    for(let i =0 ; i < level.length; i++)
@@ -562,25 +382,73 @@ gameObjects = maps[0].gameobjects;
    }
 }
 }
-function gameObjectCollision(x, y, objects, isLink, isSword)
+function collision(x, y, map)
+{	
+	for(let i = 0; i < map.length; i++)
+	{
+		for(let j = 0; j < map[i].length; j++)
+			{
+				if(map[i][j] != 2 && map[i][j] != 28)
+				{
+					if (x <= j*16 + 16 &&
+					   x + 12 >= j*16 &&
+					   y + 10 <= i*16 + 16 &&
+					   y + 16 >= i*16 ) 
+					{
+						return true;
+					}
+				}
+			}
+	}
+	return false;	
+}
+function gameObjectCollision(x, y, objects, isLink, isSword, direction)
 {
 	if(isLink)
 	{
 		for(let i = 0; i < objects.length; i++)
-		{
-			if(x <= objects[i].x + objects[i].width &&
-			x + 16 >= objects[i].x &&
-			y <= objects[i].y + objects[i].height &&
-			y + 16 >= objects[i].y)
 			{
-				if(objects[i].isPortal)
-				{
-					gameMap = maps[objects[i].newMap].map;
-					gameObjects = maps[objects[i].newMap].gameobjects;
-					linkX = objects[i].newLinkX;
-					linkY = objects[i].newLinkY;
-				}
-			if(objects[i].isPickUpItem)
+				if (x <= objects[i].x + objects[i].width &&
+				   x + 16 >= objects[i].x &&
+				   y  <= objects[i].y + objects[i].height &&
+				   y + 16 >= objects[i].y ) {
+						if(objects[i].isPortal)
+						{
+							gameMap = maps[objects[i].newMap].map;
+							gameObjects = maps[objects[i].newMap].gameobjects;
+							currentMap = objects[i].newMap;
+							addMapGameObjects(gameMap, gameObjects);
+							////change this after testing addMapGameObjects
+							if(objects[i].shiftsLeftRight)
+							{
+								linkX = objects[i].newLinkX;
+							}
+							else if(objects[i].shiftsUpDown)
+							{
+								linkY = objects[i].newLinkY;
+							}
+							else
+							{
+								linkX = objects[i].newLinkX;
+								linkY = objects[i].newLinkY;
+							}
+							//console.log("Switching portals");
+							break;
+							
+						}
+						///Added for tutorial 14
+						if(objects[i].isRupee)
+						{
+							rupeeAmount += objects[i].rupeeValue;
+							objects.splice(i,1);
+							playSound("./sounds/LOZ_get_rupee.wav");
+							continue;
+						}
+						
+						
+						
+						
+					    if(objects[i].isPickUpItem)
 						{
 							playPickUpItemAnimation = true;
 							///There are a number of pick up items. The first 8 are selctable within
@@ -691,8 +559,8 @@ function gameObjectCollision(x, y, objects, isLink, isSword)
 								case 14:
 									lastPickUpItem = gameObjects[i].pickUpItemNum;
 									swordEquipped = 1;
-									animationCounter = 0;
 									hasSword = true;
+									animationCounter = 0;
 									playSound("./sounds/item.mp3");
 							}
 							
@@ -702,38 +570,179 @@ function gameObjectCollision(x, y, objects, isLink, isSword)
 					}
 			}
 	}
-	else{
-	   let swordW = 11;
-	   let swordH = 3;
-	   if(lastButtonPressed == "up" || lastButtonPressed == "down"){
-	     swordW = 3;
-		 swordH = 11;
-		 
-	   }
-	   for(let i = 0; i < gameObjects.length; i++){
-	      
-	   
-	   if(x <= objects[i].x + objects[i].width &&
-			x + swordW >= objects[i].x &&
-			y <= objects[i].y + objects[i].height &&
-			y + swordH >= objects[i].y)
+	else
+	{
+		let swordW = 11;
+		let swordH = 3;
+		if(lastButtonPressed == "up" ||
+			lastButtonPressed == "down")
+		{
+			swordW = 3;
+			swordH = 11;
+		}
+		
+		for(let i = 0; i < objects.length; i++)
 			{
-	          if(objects[i].isEnemy){
-			    objects[i].health -= 1;
-				 if(objects[i].health <= 0){
-				   playSound("./sounds/LOZ_enemy_die.wav");
-				   
-				 }
-				 else{
-				  playSound("./sounds/LOZ_enemy_hit.wav");
-				  }
-			  }
-	 
-	     }
-		 } 
-		 
-	   }
+				if(lastButtonPressed == "left")
+				{
+					if (x  <= objects[i].x + objects[i].width &&
+					x + swordW>= objects[i].x &&
+					y <= objects[i].y + objects[i].height &&
+					y + swordH >= objects[i].y ) 
+					{
+						//ctx.fillRect(x + 2, (y+6), swordW, swordH);
+						if(objects[i].isEnemy)
+								{
+									objects[i].needsBounce = true;
+									getBounceLoc(objects[i], false,
+											direction);
+									objects[i].health -= 1;
+									if(objects[i].health == 0)
+									{
+										playSound("./sounds/LOZ_enemy_die.wav");
+									}
+									else
+									{
+										playSound("./sounds/LOZ_enemy_hit.wav");
+									}
+								}
+					}
+				}
+				else if(lastButtonPressed == "right")
+				{
+					if (x<= objects[i].x + objects[i].width &&
+					x  + swordW>= objects[i].x &&
+					y   <= objects[i].y + objects[i].height &&
+					y  + swordH >= objects[i].y ) 
+					{
+						//ctx.fillRect(x - 2, (y+6), swordW, swordH);
+						if(objects[i].isEnemy)
+								{
+									objects[i].needsBounce = true;
+									getBounceLoc(objects[i], false,
+											direction);
+									objects[i].health -= 1;
+									if(objects[i].health == 0)
+									{
+										playSound("./sounds/LOZ_enemy_die.wav");
+									}
+									else
+									{
+										playSound("./sounds/LOZ_enemy_hit.wav");
+									}
+								}
+					}
+				}
+				else if(lastButtonPressed == "up")
+				{
+					if (x <= objects[i].x + objects[i].width &&
+					x  + swordW>= objects[i].x &&
+					y   <= objects[i].y + objects[i].height &&
+					y  + swordH >= objects[i].y ) 
+					{
+						//ctx.fillRect(x - 2, y, swordW, swordH);
+						if(objects[i].isEnemy)
+								{
+									objects[i].needsBounce = true;
+									getBounceLoc(objects[i], false,
+											direction);
+									objects[i].health -= 1;
+									if(objects[i].health == 0)
+									{
+										playSound("./sounds/LOZ_enemy_die.wav");
+									}
+									else
+									{
+										playSound("./sounds/LOZ_enemy_hit.wav");
+									}
+								}
+					}
+				}
+				else{
+				
+					if (x <= objects[i].x + objects[i].width &&
+					x + swordW>= objects[i].x &&
+					y  <= objects[i].y + objects[i].height &&
+					y + swordH >= objects[i].y ) 
+					{
+						//ctx.fillRect(x, y, swordW, swordH);
+						if(objects[i].isEnemy)
+								{
+									objects[i].needsBounce = true;
+									getBounceLoc(objects[i], false,
+											direction);
+									objects[i].health -= 1;
+									if(objects[i].health == 0)
+									{
+										playSound("./sounds/LOZ_enemy_die.wav");
+									}
+									else
+									{
+										playSound("./sounds/LOZ_enemy_hit.wav");
+									}
+								}
+					}
+				}
+		}
 	}
+}
+
+	function getBounceLoc(gObject, ignoresObjects, direction){
+       let currRow = Math.floor(gObject.y/16);
+	   let currCol = Math.floor(gObject.x/16);
+	   
+	   if(direction == "up"){
+	      if(gameMap[currRow -1][currCol] == 2){
+		   
+		   gObject.bounceY = gObject.y - 16;
+		     gObject.bounceX = gObject.x;
+		  }
+		  else{
+		    
+			gObject.bounceY = gObject.y;
+		    gObject.bounceX = gObject.x;
+		  }
+	   }
+       if(direction == "down")
+	{
+		if(gameMap[currRow+1][currCol] == 2)
+		{
+			gObject.bounceY = gObject.y + 16 ;
+			gObject.bounceX = gObject.x;
+		}
+		else
+		{
+			gObject.bounceY = gObject.y;
+			gObject.bounceX = gObject.x;
+		}
+	}
+	if(direction == "left")
+	{
+		if(gameMap[currRow][currCol-1] == 2)
+		{
+			gObject.bounceX = gObject.x - 16 ;
+			gObject.bounceY = gObject.y;
+		}
+		else
+		{
+			gObject.bounceY = gObject.y;
+			gObject.bounceX = gObject.x;
+		}
+	}
+	if(direction == "right")
+	{
+		if(gameMap[currRow][currCol+1] == 2)
+		{
+			gObject.bounceX = gObject.x + 16 ;
+			gObject.bounceY = gObject.y;
+		}
+		else
+		{
+			gObject.bounceY = gObject.y;
+			gObject.bounceX = gObject.x;
+		}
+	}
+}
 
 
 function drawGameObjects(){
@@ -866,76 +875,401 @@ if(gameObjects[i].isText)
 		if(gameObjects[i].isEnemy){
 		    if(gameObjects[i].enemyType == 1){
 			   gameObjects[i].counter++;
+			   
+			   if(gameObjects[i].enemyPath == null || gameObjects[i].enemyPath.length == 0) {
+			   
+			      let currRow = Math.floor(gameObjects[i].y/16);
+				  let currCol = Math.floor(gameObjects[i].x/16);
+				  getNewCoordinates(currRow, currCol, i );
+				  }
+				      if(gameObjects[i].needsToShoot){
+					     gameObjects[i].shootCounter++;
+						if(gameObjects[i].shootCounter == 100){
+						   gO = new GameObject();
+						   gO.x = gameObjects[i].x;
+						   gO.y = gameObjects[i].y;
+						 if(gameObjects[i].direction == "down"){
+						 
+						     gO.ySpeed = 2;
+							 
+							 
+						 }
+						 if(gameObjects[i].direction == "up"){
+						 
+						     gO.ySpeed = 2;
+							}
+						 if(gameObjects[i].direction == "right"){
+						 
+						     gO.xSpeed = 2;
+							 
+							 }	
+						 if(gameObjects[i].direction == "left"){
+						 
+						     gO.xSpeed = 2;
+							 }
+							 gO.waterProjectile = false;
+							 gO.isPortal = false;
+							 gO.isRupee = false;
+							 gO.rockProjectile = true;
+							 gameObjects.push(gO);
+							 
+					  }
+					    if(gameObjects[i].shootCounter > 130){
+						   gameObjects[i].needsToShoot = false;
+						   gameObjects[i].shootCounter = 0;
+					  }
+					 }
+					  else{
+					    if(gameObjects[i].enemyPath[gameObjects[i].enemyPath.length - 1] != null && 
+						  gameObjects[i].nextX == gameObjects[i].x && gameObjects[i].nextY == gameObjects[i].y){
+						       
+							   gameObjects[i].nextX = gameObjects[i].enemyPath[gameObjects[i].enemyPath.length - 1].c * 16;
+						       gameObjects[i].nextY = gameObjects[i].enemyPath[gameObjects[i].enemyPath.length - 1].r * 16;
+						       gameObjects[i].enemyPath.splice(gameObjects[i].enemyPath.length -1, 1);
+						       
+							   let chance = Math.floor(Math.random() * 60);
+							  if(chance == 0){
+							  
+							     gameObjects[i].needsToShoot = true;
+							  }
+							  
+						  }
+						  
+					  }
+				  
 			   if(gameObjects[i].counter >= 10){
 			       gameObjects[i].frame++;
 				   gameObjects[i].counter = 0;
 				   if(gameObjects[i].frame > 1){
 				      gameObjects[i].frame = 0;
-				   }
-			   }
-			     if(gameObjects[i].direction == "down"){
-				   if(gameObjects[i].frame == 0){
-				     ctx.drawImage(enemies, 0, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
-				   }
-				   if(gameObjects[i].frame == 1){
-				     ctx.drawImage(enemies, 0, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
-				 }
-			
-			}
-		        else if(gameObjects[i].direction == "up"){
-				    if(gameObjects[i].frame == 0){
-				     ctx.drawImage(enemies, 60, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
-				   }
-				   if(gameObjects[i].frame == 1){
-				     ctx.drawImage(enemies, 60, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
-				 }
-			
-			}
-		else if(gameObjects[i].direction == "left"){
-				    if(gameObjects[i].frame == 0){
-				     ctx.drawImage(enemies, 30, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
-				   }
-				   if(gameObjects[i].frame == 1){
-				     ctx.drawImage(enemies, 30, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
-				 }
-			
-			}
-					else
+				
+	
+					}
+				}
+				if(gameObjects[i].direction == "down")
 				{
 					if(gameObjects[i].frame == 0)
 					{
-						ctx.drawImage(enemies, 90, 0, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
+						ctx.drawImage(enemies, 0, 0, 16, 16, 
+						gameObjects[i].x, gameObjects[i].y, 16, 16);
 					}
 					if(gameObjects[i].frame == 1)
 					{
-						ctx.drawImage(enemies, 90, 30, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
+						ctx.drawImage(enemies, 0, 30, 16, 16, 
+						gameObjects[i].x, gameObjects[i].y, 16, 16);
 					}
 				}
+				else if(gameObjects[i].direction == "up")
+				{
+					if(gameObjects[i].frame == 0)
+					{
+						ctx.drawImage(enemies, 60, 0, 16, 16, 
+						gameObjects[i].x, gameObjects[i].y, 16, 16);
+					}
+					if(gameObjects[i].frame == 1)
+					{
+						ctx.drawImage(enemies, 60, 30, 16, 16, 
+						gameObjects[i].x, gameObjects[i].y, 16, 16);
+					}
+				}
+				else if(gameObjects[i].direction == "left")
+				{
+					if(gameObjects[i].frame == 0)
+					{
+						ctx.drawImage(enemies, 30, 0, 16, 16, 
+						gameObjects[i].x, gameObjects[i].y, 16, 16);
+					}
+					if(gameObjects[i].frame == 1)
+					{
+						ctx.drawImage(enemies, 30, 30, 16, 16, 
+						gameObjects[i].x, gameObjects[i].y, 16, 16);
+					}
+				}
+				else
+				{
+					if(gameObjects[i].frame == 0)
+					{
+						ctx.drawImage(enemies, 90, 0, 16, 16, 
+						gameObjects[i].x, gameObjects[i].y, 16, 16);
+					}
+					if(gameObjects[i].frame == 1)
+					{
+						ctx.drawImage(enemies, 90, 30, 16, 16, 
+						gameObjects[i].x, gameObjects[i].y, 16, 16);
+					}
+				}
+				
+				if(gameObjects[i].needsBounce)
+				{
+					if(gameObjects[i].x != gameObjects[i].bounceX)
+					{
+						if(gameObjects[i].bounceX > gameObjects[i].x)
+						{
+							gameObjects[i].x += 4;
+						}
+						else if(gameObjects[i].bounceX < gameObjects[i].x)
+						{
+							gameObjects[i].x -= 4;
+						}
+					}
+					else if(gameObjects[i].y != gameObjects[i].bounceY)
+					{
+						if(gameObjects[i].bounceY > gameObjects[i].y)
+						{
+							gameObjects[i].y += 4;
+						}
+						else if(gameObjects[i].bounceY < gameObjects[i].y)
+						{
+							gameObjects[i].y -= 4;
+						}
+					}
+					else
+					{
+						gameObjects[i].needsBounce = false;
+					    if(gameObjects[i].health <= 0){
+						  let rupeeChance = Math.floor(Math.random()*10);
+							
+							if(rupeeChance < 10)
+							{
+								 let rupeeObject  = new GameObject()
+								rupeeObject.x = gameObjects[i].x + 4;
+								rupeeObject.y = gameObjects[i].y;
+								rupeeObject.width = 8;
+								rupeeObject.height = 16;
+								rupeeObject.isPickUpItem = false;
+								rupeeObject.isRupee = true;
+								let rupeeValueChance = Math.floor(Math.random()*10);
+								if(rupeeValueChance < 2)
+								{
+								    rupeeObject.rupeeValue = 5;
+								}
+								else
+								{
+									rupeeObject.rupeeValue = 1;
+								}
+								gameObjects.push(rupeeObject);
+							}
+							gameObjects.splice(i,1);
+						}
+					}
+				}
+				else if(gameObjects[i].enemyPath.length != 0)
+				{
+					console.log("this should be wokring.");
+					if(gameObjects[i].x != gameObjects[i].nextX)
+					{
+						if(gameObjects[i].nextX > gameObjects[i].x)
+						{
+							if(gameObjects[i].counter% gameObjects[i].speed == 0)
+							{
+								gameObjects[i].x += 2;
+							}
+							gameObjects[i].direction = "right";
+						}
+						else if(gameObjects[i].nextX < gameObjects[i].x)
+						{
+							if(gameObjects[i].counter% gameObjects[i].speed == 0)
+							{
+								gameObjects[i].x -= 2;
+							}
+							gameObjects[i].direction = "left";
+						}
+						
+					}
+					else if(gameObjects[i].y != gameObjects[i].nextY)
+					{
+						if(gameObjects[i].nextY > gameObjects[i].y)
+						{
+							if(gameObjects[i].counter% gameObjects[i].speed == 0)
+							{
+								gameObjects[i].y += 2;
+							}
+							gameObjects[i].direction = "down";
+						}
+						else if(gameObjects[i].nextY < gameObjects[i].y)
+						{
+							if(gameObjects[i].counter% gameObjects[i].speed == 0)
+							{
+								gameObjects[i].y -= 2;
+							}
+							gameObjects[i].direction = "up";
+						}
+					}
+					else if(gameObjects[i].enemyPath.length == 1)
+					{
+						gameObjects[i].enemyPath = [];
+						gameObjects[i].x = gameObjects[i].nextX;
+						gameObjects[i].y = gameObjects[i].nextY;
+					}
+				}
+				
+				
 			}
 		}
+		if(gameObjects[i].isRupee)
+		{
+			if(gameObjects[i].rupeeValue == 1)
+			{
+				gameObjects[i].counter+=1;
+				if(gameObjects[i].counter%5==0)
+				{
+					gameObjects[i].rupeeImage+=1;
+				}
+				if(gameObjects[i].rupeeImage > 1)
+				{
+					gameObjects[i].rupeeImage = 0;
+				}
+				if(gameObjects[i].rupeeImage == 0)
+				{
+					ctx.drawImage(link1, 244, 225, 8, 16, 
+							gameObjects[i].x, gameObjects[i].y, 8, 16);
+				}
+				else
+				{
+					ctx.drawImage(link1, 274, 225, 8, 16, 
+							gameObjects[i].x, gameObjects[i].y, 8, 16);
+				}
+			}
+			else
+			{
+				ctx.drawImage(link1, 274, 225, 8, 16, 
+							gameObjects[i].x, gameObjects[i].y, 8, 16);
+			}
+		}
+		
 	}
 }
 
 
 
+function getNewCoordinates(currentRow, currentCol, index)
+{
+	let randRow = Math.floor(Math.random() * 11) + 4;
+	let randCol = Math.floor(Math.random() * 15);
+	while(gameMap[randRow][randCol] != 2)
+	{
+		randRow = Math.floor(Math.random() * 11) + 4;
+	    randCol = Math.floor(Math.random() * 15);
+	}
 
-function collision(x, y, map){
-   for(let i =0 ; i < map.length; i++)
-   {
-      for(let j =0; j < map[i].length; j++) 
-	  {
-        if(map[i][j] !=2 && map[i][j] != 28){
-          if(x <= j*16 + 16 && 
-		    x  + 12 >= j * 16 && 
-		    y +10 <= i *16 + 16 && 
-		    y + 16 >= i*16){
-		return true;
-		}
-  }
-   }
-    }
-return false;
+	gameObjects[index].enemyPath = aStar(new Pos(currentRow, currentCol), 
+										new Pos(randRow, randCol), gameMap);
+	console.log("made it here.");
+	while(gameObjects[index].enemyPath.length == 0)
+	{
+		randRow = Math.floor(Math.random() * 10) + 4;
+		randCol = Math.floor(Math.random() * 15);
+		gameObjects[index].enemyPath = aStar(new Pos(currentRow, currentCol), 
+										new Pos(randRow, randCol), gameMap);
+	}	
 }
+
+function Pos(row, col)
+{
+	this.r = row;
+	this.c = col;
+}
+
+function Node(parent,  position)
+{
+	this.parent = parent;
+	this.position = position;
+	
+	this.g = 0;
+	this.h = 0;
+	this.f = 0;
+}
+
+///adapted from:
+///https://medium.com/@nicholas.w.swift/easy-a-star-pathfinding-7e6689c7f7b2
+function aStar(start, end, maze)
+{
+	start_Node = new Node(null, start);
+	end_Node = new Node(null, end);
+	let open_list = [];
+	let closed_list = [];
+	
+	open_list.push(start_Node);
+	
+	while(open_list.length > 0)
+	{
+		current_node = open_list[0];
+		current_index = 0;
+		 for(let i = 0; i < open_list.length; i++)
+		 {
+			if(open_list[i].f < current_node.f)
+			{
+				current_node = open_list[i];
+				current_index = i;
+			}
+		 }
+		open_list.splice(current_index, 1);
+		closed_list.push(current_node);
+		if(current_node.position.r == end_Node.position.r &&
+		current_node.position.c == end_Node.position.c)
+		{
+			let path = [];
+			let current = current_node;
+			while(current != null)
+			{
+				path.push(current.position);
+				current = current.parent;
+			}
+			//console.log("Start node: " + start_Node.position.r + "   " +  start_Node.position.c);
+			console.log(path);
+			return path;
+		}
+		let children = [];
+		//let positions = [{0,-1}, {0, 1}, {1, 0}, {-1, 0}];
+		let positions = [new Pos(0,-1), new Pos(0,1), new Pos(1,0), new Pos(-1,0)];
+		for(let i = 0; i < positions.length; i++)
+		{
+			node_position = new Pos(current_node.position.r + positions[i].r, current_node.position.c + positions[i].c);
+			
+			if(node_position.r > (maze.length - 1) || node_position.r < 0 || node_position.c > (maze[0].length - 1) || node_position.c < 0)
+            {
+				//console.log("Breaking at i: " + i);
+				continue;
+			}
+			if(maze[node_position.r][node_position.c] != 2)
+			{
+				//console.log("our path contains an obstacle at: " + node_position.r + "    " + node_position.c);
+				//console.log("Breaking at i: " + i);
+				continue;
+			}
+			//console.log("adding node for : " + i);
+			let new_node = new Node(current_node, node_position);
+			
+			children.push(new_node);
+		}
+		
+		for(let i = 0; i < children.length; i++)
+		{
+			for(let j = 0; j < closed_list.length; j++)
+			{
+				if(children[i].position.r == closed_list[j].position.r &&
+					children[i].position.c == closed_list[j].position.c)
+                    continue;
+			}
+			
+			children[i].g = current_node.g + 1;
+            children[i].h = ((children[i].position.r - end_Node.position.r) * (children[i].position.r - end_Node.position.r)) + 
+			((children[i].position.c - end_Node.position.c)*(children[i].position.c - end_Node.position.c))
+            children[i].f = children[i].g + children[i].h;
+			
+			for(let j = 0; j < open_list.length; j++)
+			{
+				if(children[i].position.r == open_list[j].position.r &&
+					children[i].position.c == open_list[j].position.c &&
+					children[i].g > open_list[j].g)
+                    continue;
+			}
+			
+			open_list.push(children[i]);
+		}
+	}
+}
+
 
 
 function drawHUD()
@@ -1028,6 +1362,116 @@ else{
 	ctx.fillRect(16, 8, 64, 48);
 
 }
+
+
+
+function alreadyContainsPortal(x, y)
+{
+	for(let i = 0; i < gameObjects.length; i++)
+	{
+		if(gameObjects[i].x == x && gameObjects[i].y == y && gameObjects[i].isPortal)
+		{
+			return true;
+		}
+	}
+}	
+
+function addMapGameObjects(levelMap, objectArray)
+{
+	let linkCanWalkSpaces = [2,28,18,6,12,14,24,30,34,58,64,70,75,76,77,
+			93,94,95,111,112,113,81,82,86,99,100,101,117,118,119,87,88,89,105,
+			106,107,123,124,125,126,127,128,129,131,132,133,134,135,137,138,139,
+			140,141,143];
+	
+	for (i = 4; i < levelMap.length; i++)
+	{
+		for (j = 0; j < levelMap[0].length; j++)
+		{
+			if(i == 4)
+			{
+				if(linkCanWalkSpaces.includes(levelMap[i][j]))
+				{
+					gO = new GameObject();
+					gO.x = j * 16;
+					gO.y = 3 * 16;
+					gO.width = 16;
+					gO.height = 16;
+					gO.newMap = currentMap - 16;
+					gO.newLinkX = (j * 16) - 16;
+					gO.newLinkY = 223;
+					gO.isPortal = true;
+					gO.shiftsUpDown = true;
+					if(!alreadyContainsPortal(j * 16, 3 * 16))
+					{
+						gameObjects.push(gO);
+					}
+				}
+			}
+			if(i == 14)
+			{
+				if(linkCanWalkSpaces.includes(levelMap[i][j]))
+				{
+					gO = new GameObject();
+					gO.x = j * 16;
+					gO.y = (i + 1) * 16;
+					gO.width = 16;
+					gO.height = 16;
+					gO.newMap = currentMap + 16;
+					gO.newLinkX = (j * 16) + 1;
+					gO.newLinkY = 81;
+					gO.isPortal = true;
+					gO.shiftsUpDown = true;
+					if(!alreadyContainsPortal(j * 16, (i + 1) * 16))
+					{
+						gameObjects.push(gO);
+					}
+				}
+			}
+			if(j == 0)
+			{
+				if(linkCanWalkSpaces.includes(levelMap[i][j]))
+				{
+					gO = new GameObject();
+					gO.x = -16;
+					gO.y = i * 16;
+					gO.width = 16;
+					gO.height = 16;
+					gO.newMap = currentMap - 1;
+					gO.newLinkX = 223;
+					gO.newLinkY = (i * 16) - 1;
+					gO.isPortal = true;
+					gO.shiftsLeftRight = true;
+					if(!alreadyContainsPortal(-16, i * 16))
+					{
+						gameObjects.push(gO);
+					}
+				}
+			}
+			if(j == 15)
+			{
+				if(linkCanWalkSpaces.includes(levelMap[i][j]))
+				{
+					gO = new GameObject();
+					gO.x = 256;
+					gO.y = i * 16;
+					gO.width = 16;
+					gO.height = 16;
+					gO.newMap = currentMap + 1;
+					gO.newLinkX = 1;
+					gO.newLinkY = (i * 16) - 2;
+					gO.isPortal = true;
+					gO.shiftsLeftRight  = true;
+					if(!alreadyContainsPortal(256, i * 16))
+					{
+						gameObjects.push(gO);
+					}
+				}
+			}
+		}
+	}
+}
+
+
 
 function draw () {
    setTimeout(function() {
