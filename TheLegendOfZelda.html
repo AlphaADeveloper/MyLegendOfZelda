@@ -60,6 +60,12 @@ let hasSword = false;
 let isAttacking = false;
 let canAttackAgain = true;
 
+let linkNeedsToBounce = false;
+let linkIsInvincible = false;
+let invincibleTime = 0;
+
+
+
 gameObjects = maps[119].gameobjects;
 gameMap = maps[119].map;
 let currentMap = 119;
@@ -210,6 +216,8 @@ function drawLink()
 						linkX-2, linkY - 14, 8, 16);
 				break;
 		}
+		
+		
 	}
 	else{
 	    if(isAttacking && hasSword){
@@ -566,8 +574,39 @@ function gameObjectCollision(x, y, objects, isLink, isSword, direction)
 							
 							objects.splice(i,1);
 							animationCounter = 0;
-						}
-					}
+                               continue;
+					}					
+				     if((objects[i].waterProjectile || objects[i].rockProjectile || objects[i].isEnemy) && !linkNeedsToBounce && !linkIsInvincible)
+						{
+							if(objects[i].rockProjectile &&
+							((lastButtonPressed == "up" && objects[i].ySpeed > 0) ||
+							(lastButtonPressed == "down" && objects[i].ySpeed < 0) ||
+							(lastButtonPressed == "left" && objects[i].xSpeed > 0) ||
+							(lastButtonPressed == "right" && objects[i].xSpeed < 0)))
+							{
+								playSound("./sounds/LOZ_shield.wav");
+								objects.splice(i, 1);
+								return;
+							}
+							playSound("./sounds/LOZ_link_hurt.wav");
+							if(objects[i].waterProjectile || objects[i].rockProjectile)
+							{
+								objects.splice(i, 1);
+							}
+							currentLinkHearts -= .5;
+							linkIsInvincible = true;
+							invincibleTime = 30;
+							if(currentLinkHearts <= 0)
+							{
+								///link has died
+							}
+							   
+
+
+
+              }
+			}
+					
 			}
 	}
 	else
@@ -818,6 +857,7 @@ function drawGameObjects(){
 		
 	}
   }
+  
 if(gameObjects[i].isText)
 		{
 			gameObjects[i].counter+=1;
@@ -883,42 +923,38 @@ if(gameObjects[i].isText)
 				  getNewCoordinates(currRow, currCol, i );
 				  }
 				      if(gameObjects[i].needsToShoot){
-					     gameObjects[i].shootCounter++;
-						if(gameObjects[i].shootCounter == 100){
-						   gO = new GameObject();
-						   gO.x = gameObjects[i].x;
-						   gO.y = gameObjects[i].y;
-						 if(gameObjects[i].direction == "down"){
-						 
-						     gO.ySpeed = 2;
-							 
-							 
-						 }
-						 if(gameObjects[i].direction == "up"){
-						 
-						     gO.ySpeed = 2;
-							}
-						 if(gameObjects[i].direction == "right"){
-						 
-						     gO.xSpeed = 2;
-							 
-							 }	
-						 if(gameObjects[i].direction == "left"){
-						 
-						     gO.xSpeed = 2;
-							 }
-							 gO.waterProjectile = false;
-							 gO.isPortal = false;
-							 gO.isRupee = false;
-							 gO.rockProjectile = true;
-							 gameObjects.push(gO);
-							 
-					  }
-					    if(gameObjects[i].shootCounter > 130){
-						   gameObjects[i].needsToShoot = false;
-						   gameObjects[i].shootCounter = 0;
-					  }
-					 }
+    gameObjects[i].shootCounter++;
+    if(gameObjects[i].shootCounter == 100){
+        gO = new GameObject();
+        gO.x = gameObjects[i].x;
+        gO.y = gameObjects[i].y;
+        // Initialize speeds to 0
+        gO.xSpeed = 0;
+        gO.ySpeed = 0;
+        // Set speed based on enemy direction
+        if(gameObjects[i].direction == "down"){
+            gO.ySpeed = 2;    // Positive Y moves down
+        }
+        if(gameObjects[i].direction == "up"){
+            gO.ySpeed = -2;   // Negative Y moves up
+        }
+        if(gameObjects[i].direction == "right"){
+            gO.xSpeed = 2;    // Positive X moves right
+        }	
+        if(gameObjects[i].direction == "left"){
+            gO.xSpeed = -2;   // Negative X moves left
+        }
+        gO.waterProjectile = false;
+        gO.isPortal = false;
+        gO.isRupee = false;
+        gO.rockProjectile = true;
+        gameObjects.push(gO);
+    }
+    if(gameObjects[i].shootCounter > 130){
+        gameObjects[i].needsToShoot = false;
+        gameObjects[i].shootCounter = 0;
+    }
+}  
 					  else{
 					    if(gameObjects[i].enemyPath[gameObjects[i].enemyPath.length - 1] != null && 
 						  gameObjects[i].nextX == gameObjects[i].x && gameObjects[i].nextY == gameObjects[i].y){
@@ -927,7 +963,7 @@ if(gameObjects[i].isText)
 						       gameObjects[i].nextY = gameObjects[i].enemyPath[gameObjects[i].enemyPath.length - 1].r * 16;
 						       gameObjects[i].enemyPath.splice(gameObjects[i].enemyPath.length -1, 1);
 						       
-							   let chance = Math.floor(Math.random() * 60);
+							   let chance = Math.floor(Math.random() * 30);
 							  if(chance == 0){
 							  
 							     gameObjects[i].needsToShoot = true;
@@ -1105,7 +1141,55 @@ if(gameObjects[i].isText)
 				
 				
 			}
-		}
+	        if(gameObjects[i].enemyType == 2)
+			{
+				gameObjects[i].counter++;
+				if(gameObjects[i].counter < 240)
+				{
+					ctx.drawImage(enemies, 180, 300, 16, 16, gameObjects[i].x, gameObjects[i].y, 16, 16);
+				}
+				 
+			else if(gameObjects[i].counter == 240)
+			{
+			    gO = new GameObject();
+				gO.x = gameObjects[i].x;
+				gO.y = gameObjects[i].y;
+				gO.width = 8;
+				gO.height = 10;
+				gO.waterProjectile = true;
+				gO.isPortal= false;
+				let adjustedX = gameObjects[i].x - linkX;
+			    let adjustedY = gameObjects[i].y - linkY;
+				let angle = -1 * Math.atan2(adjustedX, adjustedY) - Math.PI/2;
+                gO.angle = angle;
+                gameObjects.push(gO);				
+			  }
+			 else if(gameObjects[i].counter < 420)
+			  {
+			    //hide enemy under water
+			    
+			  }
+			 else 
+			 {
+			    let count = 0;
+				let newCol = Math.floor(Math.random() * 14);
+				let newRow = Math.floor(Math.random() * 11) + 4;
+				while(count < 10 || gameMap[newRow][newCol] != 91)
+			     {
+				    newCol = Math.floor(Math.random() * 14);
+				    newRow = Math.floor(Math.random() * 11) + 4;
+				    count++;
+				 }
+				 if(gameMap[newRow][newCol] == 91)
+				 {
+				     gameObjects[i].x = newCol * 16;
+					 gameObjects[i].y = newRow * 16;
+				 }
+				 gameObjects[i].counter = 0;
+				 
+      }	
+	 }
+	}
 		if(gameObjects[i].isRupee)
 		{
 			if(gameObjects[i].rupeeValue == 1)
@@ -1128,7 +1212,7 @@ if(gameObjects[i].isText)
 				{
 					ctx.drawImage(link1, 274, 225, 8, 16, 
 							gameObjects[i].x, gameObjects[i].y, 8, 16);
-				}
+				} 
 			}
 			else
 			{
@@ -1136,11 +1220,47 @@ if(gameObjects[i].isText)
 							gameObjects[i].x, gameObjects[i].y, 8, 16);
 			}
 		}
-		
-	}
+		if(gameObjects[i].rockProjectile)
+		{
+		  ctx.drawImage(enemies, 90, 300, 16, 16, gameObjects[i].x, gameObjects[i].y, 10, 10);
+		  gameObjects[i].x += gameObjects[i].xSpeed;
+		  gameObjects[i].y += gameObjects[i].ySpeed;
+		if(gameObjects[i].x < 0 || gameObjects[i].x >256 || gameObjects[i].y < 0 || gameObjects[i].y > 240)
+			  {
+			       gameObjects.splice(i, 1,);
+			       return;
+			  }
+		} 
+	    if(gameObjects[i].waterProjectile)
+{
+    gameObjects[i].counter += 1;
+    
+    if(gameObjects[i].counter === 0)
+    {
+        ctx.drawImage(enemies, 334, 33, 8, 10, gameObjects[i].x, gameObjects[i].y, 8, 10);
+    }
+    else if(gameObjects[i].counter === 1)
+    {
+        ctx.drawImage(enemies, 364, 33, 8, 10, gameObjects[i].x, gameObjects[i].y, 8, 10);
+    }
+    else
+    {
+        ctx.drawImage(enemies, 394, 33, 8, 10, gameObjects[i].x, gameObjects[i].y, 8, 10);
+        gameObjects[i].counter -= 1;
+    }
+    
+    gameObjects[i].x += Math.cos(gameObjects[i].angle);
+    gameObjects[i].y += Math.sin(gameObjects[i].angle);
+    
+    if(gameObjects[i].x < 0 || gameObjects[i].x > 256 || gameObjects[i].y < 0 || gameObjects[i].y > 240)
+    {
+        gameObjects.splice(i, 1);
+		return;
+    }
+
 }
-
-
+}
+}
 
 function getNewCoordinates(currentRow, currentCol, index)
 {
@@ -1464,7 +1584,7 @@ function addMapGameObjects(levelMap, objectArray)
 					if(!alreadyContainsPortal(256, i * 16))
 					{
 						gameObjects.push(gO);
-					}
+				}
 				}
 			}
 		}
@@ -1476,15 +1596,20 @@ function addMapGameObjects(levelMap, objectArray)
 function draw () {
    setTimeout(function() {
    requestAnimationFrame(draw);
-   ctx.fillStyle = "rgb(20,20,20)";
+   ctx.fillStyle = "rgb(0,0,0)";
    ctx.fillRect(0,0,256,240);
    ///all code goes here
+   invincibleTime--;
+   if(invincibleTime <= 0)
+   {
+	linkIsInvincible = false;
+   }
    drawMap(gameMap);
    drawLink();
    gameObjectCollision(linkX, linkY, gameObjects, true);
    drawGameObjects();
-    drawHUD();
-},1000/fps);
+   drawHUD();
+   },1000/fps);
 }
 draw();
 
