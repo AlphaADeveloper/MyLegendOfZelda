@@ -24,7 +24,7 @@ let fps = 60;
 let worldTiles = new Image();
 worldTiles.src = "tiles-overworld.png";
 let link1 = new Image();
-link1.src = "link.png";
+link1.src = "link.png";  
 let hud = new Image();
 hud.src = "pausescreen.png";
 let chars1 = new Image();
@@ -46,6 +46,7 @@ let animationSpeed = 10;
 let linkX = 116;
 let linkY = 135;
 let gameObjects = [];
+let projectiles  = [];
 
 let gameMap = null;
 let lastPickUpItem = 0;
@@ -59,6 +60,7 @@ let swordEquipped = 0;
 let hasSword = false;
 let isAttacking = false;
 let canAttackAgain = true;
+let canShootSword = true;
 
 let linkNeedsToBounce = false;
 let linkIsInvincible = false;
@@ -107,6 +109,7 @@ function keyDownHandler(e){
 		isAttacking = true;
 		currentAnimation = 0; 
 		canAttackAgain = false;
+		canShootSword = true;
 		playSound("./sounds/LOZ_sword_slash.wav");
 	 }
 }
@@ -239,19 +242,67 @@ function drawLink()
 		      if(lastButtonPressed == "down"){
 			     ctx.drawImage(link1, 0, 84, 16, 27, linkX, linkY, 16, 27);
 				gameObjectCollision(linkX + 7, linkY + 16, gameObjects, false, true, "down");
-			  }
+			       if(currentLinkHearts == linkHearts &&
+				     canShootSword){
+					      let proj = new GameObject();
+						  proj.direction = lastButtonPressed;
+						  proj.x = linkX + 5;
+						  proj.y = linkY + 8;
+						  proj.ySpeed = 2;
+						  proj.isSwordProjectile = true;
+						  playSound("./sounds/LOZ_sword_shoot.wav");
+						  projectiles.push(proj);
+						  canShootSword = false;
+				 }
+			    }
 			    if(lastButtonPressed == "up"){
 			     ctx.drawImage(link1, 62, 84, 16, 26, linkX, linkY - 14, 16, 26);
 			  	gameObjectCollision(linkX + 3, linkY - 14, gameObjects, false, true, "up");
-			  } 
+			     if(currentLinkHearts == linkHearts &&
+				     canShootSword){
+					      let proj = new GameObject();
+						  proj.direction = lastButtonPressed;
+						  proj.x = linkX + 1;
+						  proj.y = linkY - 6;
+						  proj.ySpeed = -2;
+						  proj.isSwordProjectile = true;
+						  playSound("./sounds/LOZ_sword_shoot.wav");
+						  projectiles.push(proj);
+						  canShootSword = false;
+				 }
+			 } 
 			  if(lastButtonPressed == "left"){
 			     ctx.drawImage(link1, 22, 84, 26, 27, linkX - 10, linkY - 8, 27, 27);
 				gameObjectCollision(linkX - 8, linkY + 5, gameObjects, false, true, "left");
-			  }  
+			     if(currentLinkHearts == linkHearts &&
+				     canShootSword){
+					      let proj = new GameObject();
+						  proj.direction = lastButtonPressed;
+						  proj.x = linkX - 12;
+						  proj.y = linkY + 4;
+						  proj.xSpeed = -2;
+						  proj.isSwordProjectile = true;
+						  playSound("./sounds/LOZ_sword_shoot.wav");
+						  projectiles.push(proj);
+						  canShootSword = false;
+				 }
+			 }  
 			  if(lastButtonPressed == "right"){
 			     ctx.drawImage(link1, 84, 84, 30, 26, linkX, linkY - 8, 30, 26);
 			   	gameObjectCollision(linkX + 14, linkY + 5, gameObjects, false, true, "right");
-			  }
+			     if(currentLinkHearts == linkHearts &&
+				     canShootSword){
+					      let proj = new GameObject();
+						  proj.direction = lastButtonPressed;
+						  proj.x = linkX;
+						  proj.y = linkY + 3;
+						  proj.xSpeed = 2;
+						  proj.isSwordProjectile = true;
+						  playSound("./sounds/LOZ_sword_shoot.wav");
+						  projectiles.push(proj);
+						  canShootSword = false;
+				 }
+			  };
 		   }
 		         if(animationCounter >= 6){
 				    currentAnimation++;
@@ -1538,7 +1589,7 @@ function addMapGameObjects(levelMap, objectArray)
 					gO.height = 16;
 					gO.newMap = currentMap + 16;
 					gO.newLinkX = (j * 16) + 1;
-					gO.newLinkY = 81;
+					gO.newLinkY = 65;
 					gO.isPortal = true;
 					gO.shiftsUpDown = true;
 					if(!alreadyContainsPortal(j * 16, (i + 1) * 16))
@@ -1557,7 +1608,7 @@ function addMapGameObjects(levelMap, objectArray)
 					gO.width = 16;
 					gO.height = 16;
 					gO.newMap = currentMap - 1;
-					gO.newLinkX = 223;
+					gO.newLinkX = 239;
 					gO.newLinkY = (i * 16) - 1;
 					gO.isPortal = true;
 					gO.shiftsLeftRight = true;
