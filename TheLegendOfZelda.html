@@ -1643,7 +1643,38 @@ function addMapGameObjects(levelMap, objectArray)
 }
 
 
-
+ function drawProjectiles(){
+     for(let i = 0; i < projectiles.length; i++)
+	 {
+	      if(projectiles[i].isSwordProjectile)
+		  {
+		     projectiles[i].counter++;
+			  if(projectiles[i].counter > 2)
+			  {
+			      projectiles[i].frame++;
+				  projectiles[i].counter = 0;
+				   if(projectiles[i].frame > 1)
+				   {
+				      projectiles[i].frame = 0;
+				   }
+				}
+		         if(projectiles[i].direction == "up")
+				 {
+				    projectiles[i].y += projectiles[i].ySpeed
+				    if(projectiles[i].frame == 0)
+					{
+					  ctxdrawImage(link1, 64, 195, 8, 16, Math.floor(projectiles[i].x),
+					  Math.floor(projectiles[i].y), 8, 16,);
+					}
+                   if(projectiles[i].frame == 0)
+					{
+					  ctxdrawImage(link1, 64, 195, 8, 16, Math.floor(projectiles[i].x),
+					  Math.floor(projectiles[i].y), 8, 16,);
+					}
+				}
+		  }
+	 }
+ }
 function draw () {
    setTimeout(function() {
    requestAnimationFrame(draw);

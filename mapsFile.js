@@ -61,6 +61,7 @@ function GameObject()
 	this.rockProjectile = false;
 	this.needsToShoot = false;
 	this.shootCounter = 0;
+	this.isSwordProjectile = false;
 }
 
 let gO = new GameObject();
